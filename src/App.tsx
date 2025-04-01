@@ -4,14 +4,15 @@ import './App.css'
 import Button from './components/button/Button'
 
 interface Button {
+  id: number;
   value: number;
   disableTime?: number;
 }
 
 const buttons: Button[] = [
-  { value: 1 },
-  { value: 2 },
-  { value: 3 },
+  { id: 1, value: 1 },
+  { id: 2, value: 2 },
+  { id: 3, value: 3 },
 ];
 
 function App() {
@@ -71,8 +72,8 @@ function App() {
       <h1>React Counter App</h1>
       <div className="card">
         <div className="buttons-container">
-        {buttons.map((btn, idx) => (
-            <div className="button-wrapper" key={idx}>
+        {buttons.map((btn) => (
+            <div className="button-wrapper" key={btn.id}>
               <Button value={btn.value} clickHandler={addValue} disableTime={btn.disableTime} />
             </div>
         ))}
