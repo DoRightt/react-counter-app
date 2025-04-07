@@ -1,7 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import './App.css'
 import Button from './components/button/Button'
+
+interface AppProps {
+  timeToDecrease?: number;
+};
 
 interface Button {
   id: number;
@@ -15,52 +19,46 @@ const buttons: Button[] = [
   { id: 3, value: 3 },
 ];
 
-function App() {
+function App({
+  timeToDecrease = 10000 // 10 sec by default
+}: AppProps) {
   const [count, setCount] = useState(0);
+  const [countDownTimer, setCountDownTimer] = useState(timeToDecrease);
+
   const timerId = useRef<number | null>(null);
   const intervalId = useRef<number | null>(null);
 
-  const timeToDecrease = 10000;
+  const tick = 1000; // 1 sec
 
-  const addValue = (value: number) => {
+  const clickHandler = (value: number) => {
     setCount(prevCount => prevCount + value);
-    startTimer();
+    setCountDownTimer(timeToDecrease);
   }
 
-  const startTimer = () => {
-    clearTimers();
-
-    timerId.current = setTimeout(() => {
-      startDecreasingCount();
-    }, timeToDecrease);
-  };
-
-  const startDecreasingCount = () => {
-    intervalId.current = setInterval(() => {
-      setCount((prevCount) => {
-        if (prevCount > 1) {
-          return prevCount - 1;
-        }
-        clearTimers()
-        return 0;
-      });
-    }, 1000); // 1sec
-  };
-
-  const clearTimers = useCallback(() => {
-    if (timerId.current) {
-      clearTimeout(timerId.current);
-      timerId.current = null;
+  useEffect(() => {
+    if (countDownTimer > 0) {
+      timerId.current = setTimeout(() => {
+        setCountDownTimer((prevState) => prevState - tick);
+      }, tick);
     }
-    if (intervalId.current) {
-      clearInterval(intervalId.current);
-      intervalId.current = null;
-    }
-  }, [timerId, intervalId]);
+
+    return () => clearTimeout(timerId.current as number)
+  }, [countDownTimer]);
 
   useEffect(() => {
-    return () => clearTimers();
-  }, [clearTimers]);
+    if (countDownTimer === 0) {
+      intervalId.current = setInterval(() => {
+        setCount((prevCount) => {
+          if (prevCount > 1) {
+            return prevCount - 1;
+          }
+          return 0;
+        });
+      }, tick);
+    }
+
+    return () => clearInterval(intervalId.current as number);
+  }, [countDownTimer]);
 
   return (
     <>
@@ -74,7 +72,7 @@ function App() {
         <div className="buttons-container">
         {buttons.map((btn) => (
             <div className="button-wrapper" key={btn.id}>
-              <Button value={btn.value} clickHandler={addValue} disableTime={btn.disableTime} />
+              <Button value={btn.value} clickHandler={clickHandler} disableTime={btn.disableTime} />
             </div>
         ))}
         </div>
